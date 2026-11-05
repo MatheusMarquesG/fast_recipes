@@ -1,8 +1,7 @@
 import 'package:fast_recipes/tema/tema_app.dart';
 import 'package:flutter/material.dart';
+import 'package:fast_recipes/componentes/cartao_pesquisa.dart';
 
-/// Tela principal (RF01): identidade do app, acesso à pesquisa e à listagem.
-/// Nesta etapa é só layout; os dados reais virão da API depois.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -17,7 +16,7 @@ class HomeScreen extends StatelessWidget {
             children: const [
               _Header(),
               SizedBox(height: 24),
-              _SearchCard(),
+              SearchCard(),
               SizedBox(height: 32),
               Text(
                 'Receitas disponíveis',
@@ -101,47 +100,6 @@ class _Header extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SearchCard extends StatelessWidget {
-  const _SearchCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Pesquise uma receita pelo nome.',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          const TextField(
-            decoration: InputDecoration(
-              hintText: 'Buscar pelo nome',
-              prefixIcon: Icon(Icons.search),
-            ),
-          ),
-          const SizedBox(height: 14),
-          FilledButton(
-            onPressed: () {},
-            child: const Text('Buscar receitas'),
-          ),
-        ],
-      ),
     );
   }
 }
