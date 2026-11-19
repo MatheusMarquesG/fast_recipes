@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Paleta do app: fundo preto, cinzas escuros e azul de destaque.
 class AppColors {
-  // Azul de destaque (ícones, logo, item ativo da barra).
   static const blue = Color(0xFF4C8DFF);
-  // Azul mais forte, usado no fundo do botão para o texto branco ter contraste.
   static const blueStrong = Color(0xFF2563EB);
-  // Fundo azul bem escuro (miniatura da receita, indicador da barra).
   static const blueSoft = Color(0xFF14243F);
   static const background = Color(0xFF000000);
   static const surface = Color(0xFF16181C);

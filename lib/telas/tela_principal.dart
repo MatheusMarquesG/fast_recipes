@@ -1,50 +1,131 @@
+import 'package:fast_recipes/componentes/cartao_receita.dart';
+import 'package:fast_recipes/dados/receitas_exemplo.dart';
+import 'package:fast_recipes/modelos/receita.dart';
+import 'package:fast_recipes/telas/tela_detalhes.dart';
+import 'package:fast_recipes/telas/tela_favoritos.dart';
+import 'package:fast_recipes/telas/tela_listagem.dart';
 import 'package:fast_recipes/tema/tema_app.dart';
 import 'package:flutter/material.dart';
 import 'package:fast_recipes/componentes/cartao_pesquisa.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              _Header(),
-              SizedBox(height: 24),
-              SearchCard(),
-              SizedBox(height: 32),
-              Text(
-                'Receitas disponíveis',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _indice = 0;
+
+  void _abrirListagem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TelaListagem()),
+    );
+  }
+
+  void _abrirDetalhes(Receita receita) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TelaDetalhes(receita: receita)),
+    );
+  }
+
+  Widget _explorar() {
+    List<Widget> destaques = [];
+    for (int i = 0; i < receitasExemplo.length && i < 3; i++) {
+      Receita receita = receitasExemplo[i];
+      destaques.add(
+        CartaoReceita(
+          receita: receita,
+          aoTocar: () => _abrirDetalhes(receita),
+        ),
+      );
+    }
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _Header(),
+            const SizedBox(height: 24),
+            const SearchCard(),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _abrirListagem,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.blue,
+                minimumSize: const Size.fromHeight(48),
+                side: const BorderSide(color: AppColors.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
-                'Selecione uma receita para ver o preparo.',
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-              ),
-              SizedBox(height: 16),
-              // Dados fictícios, serão substituídos pela API.
-              _RecipeCard(
-                name: 'Salada de grão-de-bico',
-                info: '25 min • Fácil',
-                rating: '4,6 / 5',
-              ),
-            ],
-          ),
+              icon: const Icon(Icons.menu_book_outlined),
+              label: const Text('Ver todas as receitas'),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Destaques',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _abrirListagem,
+                  child: const Text('Ver todas'),
+                ),
+              ],
+            ),
+            const Text(
+              'Selecione uma receita para ver o preparo.',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            ...destaques,
+          ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget corpo;
+    if (_indice == 0) {
+      corpo = _explorar();
+    } else {
+      corpo = TelaFavoritos(
+        aoExplorar: () {
+          setState(() {
+            _indice = 0;
+          });
+        },
+      );
+    }
+
+    return Scaffold(
+      body: corpo,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        onDestinationSelected: (_) {},
+        selectedIndex: _indice,
+        onDestinationSelected: (valor) {
+          setState(() {
+            _indice = valor;
+          });
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
@@ -100,90 +181,6 @@ class _Header extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _RecipeCard extends StatelessWidget {
-  const _RecipeCard({
-    required this.name,
-    required this.info,
-    required this.rating,
-  });
-
-  final String name;
-  final String info;
-  final String rating;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          // Alternativa visual para quando a imagem não existir ou falhar (RF02).
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: AppColors.blueSoft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.restaurant_menu,
-              color: AppColors.blue,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  info,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.star, size: 18, color: AppColors.star),
-                    const SizedBox(width: 4),
-                    Text(
-                      rating,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-        ],
-      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:fast_recipes/telas/tela_pesquisa.dart';
 import 'package:fast_recipes/tema/tema_app.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +12,7 @@ class SearchCard extends StatefulWidget {
 class _SearchCardState extends State<SearchCard> {
   final TextEditingController _controller = TextEditingController();
   String? _erro;
-  String? _termo;
+  bool _abrindo = false;
 
   @override
   void dispose() {
@@ -19,13 +20,16 @@ class _SearchCardState extends State<SearchCard> {
     super.dispose();
   }
 
-  void _pesquisar() {
+  Future<void> _pesquisar() async {
+    if (_abrindo) {
+      return;
+    }
+
     String texto = _controller.text;
 
     if (texto.isEmpty) {
       setState(() {
         _erro = 'Digite o nome de uma receita para pesquisar. Ex.: bolo de cenoura';
-        _termo = null;
       });
       return;
     }
@@ -33,7 +37,6 @@ class _SearchCardState extends State<SearchCard> {
     if (texto.trim().isEmpty) {
       setState(() {
         _erro = 'O campo tem apenas espaços. Digite pelo menos uma letra do nome da receita.';
-        _termo = null;
       });
       return;
     }
@@ -45,15 +48,29 @@ class _SearchCardState extends State<SearchCard> {
 
     setState(() {
       _erro = null;
-      _termo = texto;
+      _abrindo = true;
     });
+
+    FocusScope.of(context).unfocus();
+
+    final limpar = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TelaPesquisa(termo: texto)),
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _abrindo = false;
+    });
+    if (limpar == true) {
+      _novaPesquisa();
+    }
   }
 
   void _novaPesquisa() {
     _controller.clear();
     setState(() {
       _erro = null;
-      _termo = null;
     });
   }
 
@@ -82,39 +99,29 @@ class _SearchCardState extends State<SearchCard> {
             controller: _controller,
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _pesquisar(),
+            onChanged: (_) {
+              setState(() {});
+            },
             decoration: InputDecoration(
               labelText: 'Nome da receita',
               hintText: 'Ex.: bolo de cenoura',
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: _controller.text.isEmpty
+                  ? null
+                  : IconButton(
+                      onPressed: _novaPesquisa,
+                      tooltip: 'Limpar',
+                      icon: const Icon(Icons.close),
+                    ),
               errorText: _erro,
               errorMaxLines: 2,
             ),
           ),
           const SizedBox(height: 14),
           FilledButton(
-            onPressed: _pesquisar,
+            onPressed: _abrindo ? null : _pesquisar,
             child: const Text('Buscar receitas'),
           ),
-          if (_termo != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              'Pesquisando por: "$_termo"',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Resultados provisórios.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            TextButton(
-              onPressed: _novaPesquisa,
-              child: const Text('Nova pesquisa'),
-            ),
-          ],
         ],
       ),
     );
