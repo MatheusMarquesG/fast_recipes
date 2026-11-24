@@ -25,6 +25,22 @@ class Receita {
     required this.tiposRefeicao,
   });
 
+  factory Receita.fromJson(Map<String, dynamic> json) {
+    return Receita(
+      id: json['id'],
+      nome: json['name'] ?? '',
+      imagem: json['image'],
+      ingredientes: List<String>.from(json['ingredients'] ?? []),
+      instrucoes: List<String>.from(json['instructions'] ?? []),
+      preparoMinutos: json['prepTimeMinutes'] is int ? json['prepTimeMinutes'] : null,
+      cozimentoMinutos: json['cookTimeMinutes'] is int ? json['cookTimeMinutes'] : null,
+      porcoes: json['servings'] is int ? json['servings'] : null,
+      avaliacao: json['rating'] is num ? json['rating'] : null,
+      dificuldade: json['difficulty'],
+      tiposRefeicao: List<String>.from(json['mealType'] ?? []),
+    );
+  }
+
   String get nomeExibicao {
     if (nome.trim().isEmpty) {
       return 'Receita sem nome';
@@ -37,6 +53,11 @@ class Receita {
       return null;
     }
     return preparoMinutos! + cozimentoMinutos!;
+  }
+
+  // O app só mostra receitas que ficam prontas em até 30 minutos.
+  bool get ehRapida {
+    return tempoTotal != null && tempoTotal! <= 30;
   }
 
   String get textoTempo {

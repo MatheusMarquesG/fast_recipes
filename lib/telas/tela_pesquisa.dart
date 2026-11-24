@@ -1,7 +1,7 @@
 import 'package:fast_recipes/componentes/cartao_receita.dart';
 import 'package:fast_recipes/componentes/estados.dart';
-import 'package:fast_recipes/dados/receitas_exemplo.dart';
 import 'package:fast_recipes/modelos/receita.dart';
+import 'package:fast_recipes/servicos/servico_receitas.dart';
 import 'package:fast_recipes/telas/tela_detalhes.dart';
 import 'package:fast_recipes/tema/tema_app.dart';
 import 'package:flutter/material.dart';
@@ -35,23 +35,16 @@ class _TelaPesquisaState extends State<TelaPesquisa> {
       _erro = null;
     });
     try {
-      await Future.delayed(const Duration(milliseconds: 800));
-      List<Receita> encontrados = [];
-      String termo = widget.termo.toLowerCase();
-      for (int i = 0; i < receitasExemplo.length; i++) {
-        if (receitasExemplo[i].nome.toLowerCase().contains(termo)) {
-          encontrados.add(receitasExemplo[i]);
-        }
-      }
+      List<Receita> encontrados = await ServicoReceitas.pesquisar(widget.termo);
       if (!mounted) return;
       setState(() {
         _resultados = encontrados;
         _carregando = false;
       });
-    } catch (e) {
+    } on ErroApi catch (e) {
       if (!mounted) return;
       setState(() {
-        _erro = 'Não foi possível concluir a pesquisa. Verifique sua conexão e tente novamente.';
+        _erro = e.mensagem;
         _carregando = false;
       });
     }
@@ -85,7 +78,7 @@ class _TelaPesquisaState extends State<TelaPesquisa> {
       return EstadoMensagem(
         icone: Icons.search_off,
         titulo: 'Nenhuma receita encontrada',
-        texto: 'Não encontramos receitas com o nome "${widget.termo}". Tente outro nome.',
+        texto: 'Não encontramos receitas de até 30 min com o nome "${widget.termo}". Tente outro nome.',
         textoBotao: 'Nova pesquisa',
         aoPressionar: _limparPesquisa,
       );

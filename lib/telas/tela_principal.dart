@@ -1,6 +1,7 @@
 import 'package:fast_recipes/componentes/cartao_receita.dart';
-import 'package:fast_recipes/dados/receitas_exemplo.dart';
+import 'package:fast_recipes/componentes/estados.dart';
 import 'package:fast_recipes/modelos/receita.dart';
+import 'package:fast_recipes/servicos/servico_receitas.dart';
 import 'package:fast_recipes/telas/tela_detalhes.dart';
 import 'package:fast_recipes/telas/tela_favoritos.dart';
 import 'package:fast_recipes/telas/tela_listagem.dart';
@@ -17,6 +18,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _indice = 0;
+  List<Receita> _receitas = [];
+  bool _carregando = false;
+  String? _erro;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    if (_carregando) {
+      return;
+    }
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+    try {
+      List<Receita> resultado = await ServicoReceitas.buscarTodas();
+      if (!mounted) return;
+      setState(() {
+        _receitas = resultado;
+        _carregando = false;
+      });
+    } on ErroApi catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erro = e.mensagem;
+        _carregando = false;
+      });
+    }
+  }
 
   void _abrirListagem() {
     Navigator.push(
@@ -34,8 +68,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _explorar() {
     List<Widget> destaques = [];
-    for (int i = 0; i < receitasExemplo.length && i < 3; i++) {
-      Receita receita = receitasExemplo[i];
+    if (_carregando) {
+      destaques.add(const EstadoCarregando(mensagem: 'Carregando receitas...'));
+    } else if (_erro != null) {
+      destaques.add(
+        EstadoMensagem(
+          icone: Icons.wifi_off,
+          titulo: 'Algo deu errado',
+          texto: _erro!,
+          textoBotao: 'Tentar novamente',
+          aoPressionar: _carregar,
+        ),
+      );
+    }
+    for (int i = 0; i < _receitas.length && i < 3; i++) {
+      Receita receita = _receitas[i];
       destaques.add(
         CartaoReceita(
           receita: receita,

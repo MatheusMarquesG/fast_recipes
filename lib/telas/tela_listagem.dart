@@ -1,7 +1,7 @@
 import 'package:fast_recipes/componentes/cartao_receita.dart';
 import 'package:fast_recipes/componentes/estados.dart';
-import 'package:fast_recipes/dados/receitas_exemplo.dart';
 import 'package:fast_recipes/modelos/receita.dart';
+import 'package:fast_recipes/servicos/servico_receitas.dart';
 import 'package:fast_recipes/telas/tela_detalhes.dart';
 import 'package:fast_recipes/tema/tema_app.dart';
 import 'package:flutter/material.dart';
@@ -33,20 +33,16 @@ class _TelaListagemState extends State<TelaListagem> {
       _erro = null;
     });
     try {
-      await Future.delayed(const Duration(milliseconds: 800));
-      List<Receita> resultado = [];
-      for (int i = 0; i < receitasExemplo.length; i++) {
-        resultado.add(receitasExemplo[i]);
-      }
+      List<Receita> resultado = await ServicoReceitas.buscarTodas();
       if (!mounted) return;
       setState(() {
         _receitas = resultado;
         _carregando = false;
       });
-    } catch (e) {
+    } on ErroApi catch (e) {
       if (!mounted) return;
       setState(() {
-        _erro = 'Não foi possível carregar as receitas. Verifique sua conexão e tente novamente.';
+        _erro = e.mensagem;
         _carregando = false;
       });
     }
@@ -87,7 +83,7 @@ class _TelaListagemState extends State<TelaListagem> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(
-              '${_receitas.length} receitas encontradas',
+              '${_receitas.length} receitas de até 30 min',
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
